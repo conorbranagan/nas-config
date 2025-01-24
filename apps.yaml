@@ -1,0 +1,118 @@
+version: "3.8"
+
+x-environment: &environment
+  environment:
+    - TZ=$TZ
+    - PUID=$PUID
+    - PGID=$PGID
+
+x-network: &network
+  network_mode: container:tailscale-traefik
+
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    network_mode: container:tailscale-traefik
+    restart: unless-stopped
+    <<: [*environment, *network]
+    volumes:
+      - $APPS_DIR/etc/localtime:/etc/localtime:ro
+      - $APPS_DIR/config/sonarr:/config
+      - $MEDIA_DIR/tv:/tv
+      - $MEDIA_DIR/torrents:/mnt/downloads
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.${PUBLIC_HOSTNAME}`)"
+      - "traefik.http.routers.sonarr.tls=true"
+      - "traefik.http.routers.sonarr.service=sonarr"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+    pull_policy: always
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    network_mode: container:tailscale-traefik
+    restart: unless-stopped
+    <<: [*environment, *network]
+    volumes:
+      - $APPS_DIR/etc/localtime:/etc/localtime:ro
+      - $APPS_DIR/config/radarr:/config
+      - $MEDIA_DIR/movies:/movies
+      - $MEDIA_DIR/torrents:/mnt/downloads
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.${PUBLIC_HOSTNAME}`)"
+      - "traefik.http.routers.radarr.tls=true"
+      - "traefik.http.routers.radarr.service=radarr"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+    pull_policy: always
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    network_mode: container:tailscale-traefik
+    restart: unless-stopped
+    <<: [*environment, *network]
+    volumes:
+      - $APPS_DIR/etc/localtime:/etc/localtime:ro
+      - $APPS_DIR/config/prowlarr:/config
+      - $MEDIA_DIR/tv:/tv
+      - $MEDIA_DIR/torrents:/torrents
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prowlarr.entrypoints=websecure"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.${PUBLIC_HOSTNAME}`)"
+      - "traefik.http.routers.prowlarr.tls=true"
+      - "traefik.http.routers.prowlarr.service=prowlarr"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+    pull_policy: always
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    <<: [*network]
+    environment:
+      - TZ=$TZ
+      - PUID=$PUID
+      - PGID=$PGID
+      - WEBUI_PORT=8081
+      - TORRENTING_PORT=6881
+    volumes:
+      - $APPS_DIR/qbittorrent:/config
+      - $MEDIA_DIR/torrents:/mnt/downloads
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.entrypoints=websecure"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbt.${PUBLIC_HOSTNAME}`)"
+      - "traefik.http.routers.qbittorrent.tls=true"
+      - "traefik.http.routers.qbittorrent.service=qbittorrent"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8081"
+
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    restart: unless-stopped
+    <<: [*environment, *network]
+    volumes:
+      - $APPS_DIR/plex/plexdata/config:/config
+      - $APPS_DIR/plex/transcode:/transcode
+      - $MEDIA_DIR/tv:/tv
+      - $MEDIA_DIR/movies:/movies
+      - $MEDIA_DIR/music:/music
+      - $MEDIA_DIR/audiobooks:/audiobooks
+      - $MEDIA_DIR/torrents:/torrents
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.plex.entrypoints=websecure"
+      - "traefik.http.routers.plex.rule=Host(`plex.${PUBLIC_HOSTNAME}`)"
+      - "traefik.http.routers.plex.tls=true"
+      - "traefik.http.routers.plex.service=plex"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
+    devices:
+      - /dev/dri:/dev/dri
+    privileged: true
+    pull_policy: always    

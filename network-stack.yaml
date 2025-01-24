@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+  tailscale-traefik:
+    image: tailscale/tailscale:latest
+    container_name: tailscale-traefik
+    hostname: tailscale-traefik
+    environment:
+      - TS_AUTHKEY=$TS_AUTHKEY
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+    volumes:
+      - $APPS_DIR/tailscale-traefik/state:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+    restart: unless-stopped
+    # Exposing tailscale to host so 
+    network_mode: host
+
+  traefik:
+    image: traefik:v2.10.1
+    container_name: traefik
+    depends_on:
+      - tailscale-traefik
+    network_mode: service:tailscale-traefik
+    command:
+      - "--log.level=TRACE"
+      - "--api=true"
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--api.debug=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
+      #- "--accesslog=true"
+      # TODO: Check if we need this
+      #- "--serversTransport.insecureSkipVerify=true"
+      - "--certificatesresolvers.cloudflare.acme.email=$CF_API_EMAIL"
+      - "--certificatesresolvers.cloudflare.acme.storage=acme.json"
+      - "--certificatesresolvers.cloudflare.acme.dnsChallenge.provider=cloudflare"
+      #- "--certificatesresolvers.cloudflare.acme.dnsChallenge.disablePropagationCheck=true"
+      #- "--certificatesresolvers.cloudflare.acme.dnsChallenge.resolvers[0]=1.1.1.1:53"
+      #- "--certificatesresolvers.cloudflare.acme.dnsChallenge.resolvers[1]=1.0.0.1:53"
+    restart: unless-stopped
+    environment:
+      - CF_API_EMAIL=$CF_API_EMAIL
+      - CF_DNS_API_TOKEN=$CF_API_TOKEN
+      - PUBLIC_HOSTNAME
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      #- $APPS_DIR/traefik/traefik.yml:/traefik.yml:ro
+      - $APPS_DIR/traefik/acme.json:/acme.json:rw
+      #- $APPS_DIR/traefik/config.yml:/config.yml:ro
+    labels:
+      - "traefik.enable=true"
+      # Port for Docker provider is defined here since network_mode restricts the definition of ports.
+      # This must be included otherwise you will receive 404s.
+      - "traefik.http.services.traefik.loadbalancer.server.port=443"
+
+      # HTTPS Router (with auth)
+      - "traefik.http.routers.api.rule=Host(`traefik.${PUBLIC_HOSTNAME}`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.routers.api.tls.certresolver=cloudflare"
+      - "traefik.http.routers.api.tls.domains[0].main=${PUBLIC_HOSTNAME}"
+      - "traefik.http.routers.api.tls.domains[0].sans=\"*.${PUBLIC_HOSTNAME}\""
+      - "traefik.http.middlewares.auth.basicauth.users=cmb:$$2y$$05$$hoQZqnv7EYgHlWPIB0OlIu78RwR6nKmgh4Y/QU4IyNNvZC7FUlW7i"
+      - "traefik.http.routers.api.middlewares=auth"
+
+      # Other?
+      #- "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
