@@ -2,15 +2,18 @@
 
 This is my basic NAS config using docker-compose. This is used on a TrueNas server via Dockge with each of the docker-compose files in `stacks` being deployed within there.
 
+- Deploy a network stack with [Traefik](https://traefik.io) for routing and [TailScale](https://tailscale.com/) for exposure.
 - Deploys the following apps:
     1. Sonarr
-    2. Radarr
-    3. QBittorrent
-    4. Plex
-- All apps are exposed via [TailScale](https://tailscale.com/) rather than the public internet.
-- Traffic is routed through [Traefik](https://traefik.io)
-- Monitoring is (optionally) provided using [Datadog](https://datadoghq.com)
+    1. Radarr
+    1. Prowlarr
+    1. QBittorrent
+    1. Plex
+    1. Homepage
+    1. Unifi-Controller
+- Monitoring using [Datadog](https://datadoghq.com)
 
+_Note that Homepage has configuration to point to a Home Assistant instance. In my setup this is managed using a VM [following this guide](https://gist.github.com/coltenkrauter/aee059954b11bf4f6461309af521a277)._
 
 # Setup
 
