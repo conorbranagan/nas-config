@@ -1,8 +1,12 @@
-# My NAS Config
+# Docker-Compose NAS Config
 
-This is my basic NAS config using docker-compose. This is used on a TrueNas server via Dockge with each of the docker-compose files in `stacks` being deployed within there.
+This repo includes docker-compose files and configuration to setup some apps on a NAS.
 
-- Deploy a network stack with [Traefik](https://traefik.io) for routing and [TailScale](https://tailscale.com/) for exposure.
+In my setup I run a [TrueNAS](https://www.truenas.com/) server with the [Dockge](https://github.com/louislam/dockge). Each of the docker-compose files in `stacks` is deployed in Dockge.
+
+The setup is as follows:
+
+- Deploy a network stack with [Traefik](https://traefik.io) for routing and [TailScale](https://tailscale.com/) for exposure. We do _not_ expose anything to the public internet.
 - Deploys the following apps:
     1. Sonarr
     1. Radarr
@@ -33,7 +37,7 @@ _Note that Homepage has configuration to point to a Home Assistant instance. In 
 
 3. Claim the Plex Server. To ensure you have access to the Media Server in Plex, you will need to first access it via your local IP:
 
-    - Go to `<local-ip>:32400` (e.g. 192.168.1.238:32400)
+    - Go to `<local-ip>:32400` (e.g. 192.168.1.123:32400)
     - Login w/ Plex account, claim server.
     - Go to Settings -> [Server] -> Network
         - In **Custom server access URLs** add your public domain
@@ -43,7 +47,7 @@ _Note that Homepage has configuration to point to a Home Assistant instance. In 
 
     - Update `.env` with the app keys. Go through each app and generate the required keys and put them in the `.env` file.
     - Re-deploy with the new `.env` file via Dockge.
-    - Deploy configuration: `./deploy-config -a <ip|hostname> -r <path/to/config>` (e.g. `./deploy-config -a 192.168.1.238 -r /mnt/flash/apps`)
+    - Deploy configuration: `./deploy-config -a <ip|hostname> -r <path/to/config>` (e.g. `./deploy-config -a 192.168.1.123 -r /mnt/flash/apps`)
     - Validate at `https://homepage.<PUBLIC_HOSTNAME>`.
 
 # Notes
