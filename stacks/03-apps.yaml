@@ -13,12 +13,11 @@ services:
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
-    network_mode: container:tailscale-traefik
     restart: unless-stopped
     <<: [*environment, *network]
     volumes:
-      - $APPS_DIR/etc/localtime:/etc/localtime:ro
-      - $APPS_DIR/config/sonarr:/config
+      - /etc/localtime:/etc/localtime:ro
+      - $APPS_DIR/sonarr:/config
       - $MEDIA_DIR/tv:/tv
       - $MEDIA_DIR/torrents:/mnt/downloads
     labels:
@@ -33,12 +32,11 @@ services:
   radarr:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
-    network_mode: container:tailscale-traefik
     restart: unless-stopped
     <<: [*environment, *network]
     volumes:
-      - $APPS_DIR/etc/localtime:/etc/localtime:ro
-      - $APPS_DIR/config/radarr:/config
+      - /etc/localtime:/etc/localtime:ro
+      - $APPS_DIR/radarr:/config
       - $MEDIA_DIR/movies:/movies
       - $MEDIA_DIR/torrents:/mnt/downloads
     labels:
@@ -53,12 +51,11 @@ services:
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
-    network_mode: container:tailscale-traefik
     restart: unless-stopped
     <<: [*environment, *network]
     volumes:
-      - $APPS_DIR/etc/localtime:/etc/localtime:ro
-      - $APPS_DIR/config/prowlarr:/config
+      - /etc/localtime:/etc/localtime:ro
+      - $APPS_DIR/prowlarr:/config
       - $MEDIA_DIR/tv:/tv
       - $MEDIA_DIR/torrents:/torrents
     labels:
@@ -74,7 +71,7 @@ services:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
     restart: unless-stopped
-    <<: [*network]
+    <<: [*environment, *network]
     environment:
       - TZ=$TZ
       - PUID=$PUID
@@ -114,5 +111,37 @@ services:
       - "traefik.http.services.plex.loadbalancer.server.port=32400"
     devices:
       - /dev/dri:/dev/dri
+    privileged: true
+    pull_policy: always    
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    <<: [*network]
+    environment:
+      - TZ=$TZ
+      - PUID=$PUID
+      - PGID=$PGID
+      - HOMEPAGE_VAR_TRUENAS_KEY=$TRUENAS_API_KEY
+      - HOMEPAGE_VAR_HA_KEY=$HOME_ASSISTANT_API_KEY
+      - HOMEPAGE_VAR_UNIFI_USERNAME=$UNIFI_USERNAME
+      - HOMEPAGE_VAR_UNIFI_PASSWORD=$UNIFI_PASSWORD
+      - HOMEPAGE_VAR_PLEX_KEY=$PLEX_SERVER_TOKEN
+      - HOMEPAGE_VAR_SONARR_KEY=$SONARR_API_KEY
+      - HOMEPAGE_VAR_RADARR_KEY=$RADARR_API_KEY
+      - HOMEPAGE_VAR_PROWLARR_KEY=$PROWLARR_API_KEY
+      - HOMEPAGE_VAR_QBT_USERNAME=$QBT_USERNAME
+      - HOMEPAGE_VAR_QBT_PASSWORD=$QBT_PASSWORD
+    volumes:
+      - $APPS_DIR/homepage:/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.homepage.entrypoints=websecure"
+      - "traefik.http.routers.homepage.rule=Host(`homepage.${PUBLIC_HOSTNAME}`)"
+      - "traefik.http.routers.homepage.tls=true"
+      - "traefik.http.routers.homepage.service=homepage"
+      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
     privileged: true
     pull_policy: always    

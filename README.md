@@ -20,7 +20,7 @@ This is my basic NAS config using docker-compose. This is used on a TrueNas serv
     cp .env-example .env
     ```
 
-    Edit the `.env` file following the guides in 
+    Edit the `.env` file to set up initial keys. As noted in the example file, the keys for the apps (e.g. api key for Sonarr) will be unavailable until you start these up the first time.
 
 2. Run the compose stacks. Assuming you're using TrueNas Scale 24.10 (Electric Eel) or later, you can:
 
@@ -36,6 +36,13 @@ This is my basic NAS config using docker-compose. This is used on a TrueNas serv
         - In **Custom server access URLs** add your public domain
     - Now you should be able to access at `plex.$PUBLIC_HOSTNAME`.
 
+4. Get [Homepage](https://gethomepage.dev/) running
+
+    - Update `.env` with the app keys. Go through each app and generate the required keys and put them in the `.env` file.
+    - Re-deploy with the new `.env` file via Dockge.
+    - Deploy configuration: `./deploy-config -a <ip|hostname> -r <path/to/config>` (e.g. `./deploy-config -a 192.168.1.238 -r /mnt/flash/apps`)
+    - Validate at `https://homepage.<PUBLIC_HOSTNAME>`.
+
 # Notes
 
 ## Networking
@@ -43,3 +50,5 @@ This is my basic NAS config using docker-compose. This is used on a TrueNas serv
 All containers are sharing the network namespace with tailscale via the `network_mode: container:tailscale-traefik` setting.
 
 Note that the tailscale container itself is exposed to the `host` network. This is primarily so that it is accessible _locally_ so that things like Plex can directly access files and stream at the highest quality.
+
+This does mean you have to be careful about port conflicts across containers. There is likely a better approach here, so improvements may come in the future.

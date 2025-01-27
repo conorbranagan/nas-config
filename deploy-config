@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+from typing import Optional, List
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Deploy configuration files to a remote host using rsync"
+    )
+    parser.add_argument(
+        "-a", "--address", required=True, help="Remote host address (IP or hostname)"
+    )
+    parser.add_argument(
+        "-r", "--root-dir", required=True, help="Remote root directory to deploy to"
+    )
+    parser.add_argument("-u", "--user", help="Remote user to connect as", default="truenas_admin")
+    parser.add_argument(
+        "-c",
+        "--config-dir",
+        default="config",
+        help="Local config directory to deploy from (default: config)",
+    )
+    parser.add_argument(
+        "-n",
+        "--dry-run",
+        action="store_true",
+        help="Perform a dyn run run with no changes made",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Increase output verbosity"
+    )
+    return parser.parse_args()
+
+
+def validate_config_dir(config_dir: str) -> Path:
+    print(f"Validating config directory: {config_dir}")
+    path = Path(config_dir)
+    if not path.is_dir():
+        print(f"Error: Config directory '{config_dir}' does not exist", file=sys.stderr)
+        sys.exit(1)
+    print(f"Found valid config directory at: {path.resolve()}")
+    return path.resolve()
+
+
+def build_rsync_command(
+    src_dir: Path,
+    address: str,
+    dest_dir: str,
+    user: Optional[str] = None,
+    dry_run: bool = False,
+    verbose: bool = False
+) -> List[str]:
+    """
+    Build the rsync command with appropriate arguments
+    """
+    src_path = f"{src_dir}/"
+    remote_prefix = f"{user}@" if user else ""
+    dest_path = f"{remote_prefix}{address}:{dest_dir}"
+    
+    # Instead of -a (archive), we explicitly set what we want to preserve
+    # -r: recursive
+    # -l: copy symlinks as symlinks
+    # -p: preserve permissions
+    # -g: preserve groups
+    # -o: preserve owner (if running as root)
+    # Notably missing -t (times) to avoid permission issues
+    cmd = ["rsync", "-rlpgz"]  # Note: removed -t from archive mode
+    
+    if verbose:
+        cmd.append("-v")
+    
+    if dry_run:
+        cmd.append("--dry-run")
+    
+    cmd.extend([
+        "--update",  # Skip files that are newer on receiver
+        "--progress",  # Show progress during transfer
+        "--no-times",  # Explicitly don't try to preserve timestamps
+        src_path,
+        dest_path
+    ])
+    
+    return cmd
+
+
+def run_rsync(
+    src_dir: Path,
+    address: str,
+    dest_dir: str,
+    user: Optional[str] = None,
+    dry_run: bool = False,
+    verbose: bool = False,
+) -> bool:
+    """
+    Run rsync to copy files from src_dir to remote dest_dir
+
+    Args:
+        src_dir: Source directory path
+        address: Remote host address
+        dest_dir: Remote destination directory
+        user: Optional remote username
+        dry_run: Whether to perform a trial run
+        verbose: Whether to increase verbosity
+
+    Returns:
+        bool: True if rsync succeeded, False otherwise
+    """
+    cmd = build_rsync_command(src_dir, address, dest_dir, user, dry_run, verbose)
+
+    action = "Simulating" if dry_run else "Executing"
+    cmd_str = " ".join(cmd)
+    print(f"\n{action} command: {cmd_str}\n")
+
+    try:
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        print(result.stdout)
+        return True
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error: rsync failed with code {e.returncode}", file=sys.stderr)
+        print(f"Output:\n{e.stdout}", file=sys.stderr)
+        print(f"Error:\n{e.stderr}", file=sys.stderr)
+        return False
+
+    except FileNotFoundError:
+        print("Error: rsync command not found. Please install rsync.", file=sys.stderr)
+        return False
+
+
+def main() -> None:
+    args = parse_args()
+    print("\nStarting deployment process...")
+    print(f"Target: {args.address}")
+    print(f"Remote directory: {args.root_dir}")
+    if args.user:
+        print(f"Remote user: {args.user}")
+    if args.dry_run:
+        print("Mode: DRY RUN (no changes will be made)")
+
+    config_dir = validate_config_dir(args.config_dir)
+
+    if run_rsync(
+        config_dir, args.address, args.root_dir, args.user, args.dry_run, args.verbose
+    ):
+        status = "Simulation completed" if args.dry_run else "Deployment completed"
+        print(f"\n{status} successfully")
+    else:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

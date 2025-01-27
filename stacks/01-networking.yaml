@@ -37,8 +37,7 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
       #- "--accesslog=true"
-      # TODO: Check if we need this
-      #- "--serversTransport.insecureSkipVerify=true"
+      - "--serversTransport.insecureSkipVerify=true"
       - "--certificatesresolvers.cloudflare.acme.email=$CF_API_EMAIL"
       - "--certificatesresolvers.cloudflare.acme.storage=acme.json"
       - "--certificatesresolvers.cloudflare.acme.dnsChallenge.provider=cloudflare"
@@ -53,9 +52,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      #- $APPS_DIR/traefik/traefik.yml:/traefik.yml:ro
       - $APPS_DIR/traefik/acme.json:/acme.json:rw
-      #- $APPS_DIR/traefik/config.yml:/config.yml:ro
     labels:
       - "traefik.enable=true"
       # Port for Docker provider is defined here since network_mode restricts the definition of ports.
@@ -72,6 +69,3 @@ services:
       - "traefik.http.routers.api.tls.domains[0].sans=\"*.${PUBLIC_HOSTNAME}\""
       - "traefik.http.middlewares.auth.basicauth.users=cmb:$$2y$$05$$hoQZqnv7EYgHlWPIB0OlIu78RwR6nKmgh4Y/QU4IyNNvZC7FUlW7i"
       - "traefik.http.routers.api.middlewares=auth"
-
-      # Other?
-      #- "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"

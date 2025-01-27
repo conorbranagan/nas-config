@@ -1,0 +1,7 @@
+layout:
+  Media:
+    style: row
+    columns: 2
+  Home:
+    style: row
+    columns: 3

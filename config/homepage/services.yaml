@@ -1,0 +1,79 @@
+- Media:
+  - Plex:
+      icon: plex.png
+      href: https://plex.cmb.branagan.io
+      server: my-docker
+      container: plex
+      widget:
+        type: plex
+        url: https://plex.cmb.branagan.io
+        key: {{HOMEPAGE_VAR_PLEX_KEY}}
+  - Sonarr:
+      icon: sonarr.png
+      server: my-docker
+      container: sonarr
+      href: https://sonarr.cmb.branagan.io
+      widget:
+        type: sonarr
+        fields: ["wanted", "queued"]
+        url: https://sonarr.cmb.branagan.io
+        key: {{HOMEPAGE_VAR_SONARR_KEY}}
+  - Radarr:
+      icon: radarr.png
+      server: my-docker
+      container: radarr
+      href: https://radarr.cmb.branagan.io
+      widget:
+        type: radarr
+        url: https://radarr.cmb.branagan.io
+        key: {{HOMEPAGE_VAR_RADARR_KEY}}
+        enableQueue: true
+  - Prowlarr:
+      icon: prowlarr.png
+      server: my-docker
+      container: prowlarr
+      href: https://prowlarr.cmb.branagan.io
+      widget:
+        type: prowlarr
+        url: https://prowlarr.cmb.branagan.io
+        key: {{HOMEPAGE_VAR_PROWLARR_KEY}}
+        enableQueue: true
+  - QBittorrent:
+      icon: qbittorrent.png
+      href: https://qbt.cmb.branagan.io
+      server: my-docker
+      container: qbittorrent
+      widget:
+        type: qbittorrent
+        url: https://qbt.cmb.branagan.io
+        username: {{HOMEPAGE_VAR_QBT_USERNAME}}
+        password: {{HOMEPAGE_VAR_QBT_PASSWORD}}
+        enableLeechProgress: true
+
+- Home:
+  - TrueNAS:
+      icon: truenas.png
+      href: http://192.168.1.238:81
+      widget:
+        type: truenas
+        url: http://192.168.1.238:81
+        key: {{HOMEPAGE_VAR_TRUENAS_KEY}}
+        enablePools: true
+        nasType: scale
+  - Home Asssistant:
+      icon: home-assistant.png
+      href: http://homeassistant:8123
+      widget:
+        type: homeassistant
+        url: http://100.95.38.80:8123
+        key: {{HOMEPAGE_VAR_HA_KEY}}
+  - Unifi:
+      icon: unifi.png
+      href: https://unifi.cmb.branagan.io
+      server: my-docker
+      container: unifi-controller
+      widget:
+        type: unifi
+        url: https://unifi.cmb.branagan.io
+        username: {{HOMEPAGE_VAR_UNIFI_USERNAME}}
+        password: {{HOMEPAGE_VAR_UNIFI_PASSWORD}}
