@@ -8,13 +8,13 @@ The setup is as follows:
 
 - Deploy a network stack with [Traefik](https://traefik.io) for routing and [TailScale](https://tailscale.com/) for exposure. We do _not_ expose anything to the public internet.
 - Deploys the following apps:
-    1. Sonarr
-    1. Radarr
-    1. Prowlarr
-    1. QBittorrent
-    1. Plex
-    1. Homepage
-    1. Unifi-Controller
+    1. [Plex](https://www.plex.tv/)
+    1. [Sonarr](https://sonarr.tv/)
+    1. [Radarr](https://radarr.video/)
+    1. [Prowlarr](https://prowlarr.com/)
+    1. [QBittorrent](https://www.qbittorrent.org/)
+    1. [Homepage](https://gethomepage.dev/)
+    1. [Unifi-Controller](https://www.ui.com/)
 - Monitoring using [Datadog](https://datadoghq.com)
 
 _Note that Homepage has configuration to point to a Home Assistant instance. In my setup this is managed using a VM [following this guide](https://gist.github.com/coltenkrauter/aee059954b11bf4f6461309af521a277)._
