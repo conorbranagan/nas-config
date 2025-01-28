@@ -6,16 +6,25 @@ In my setup I run a [TrueNAS](https://www.truenas.com/) server with the [Dockge]
 
 The setup is as follows:
 
-- Deploy a network stack with [Traefik](https://traefik.io) for routing and [TailScale](https://tailscale.com/) for exposure. We do _not_ expose anything to the public internet.
-- Deploys the following apps:
-    1. [Plex](https://www.plex.tv/)
-    1. [Sonarr](https://sonarr.tv/)
-    1. [Radarr](https://radarr.video/)
-    1. [Prowlarr](https://prowlarr.com/)
-    1. [QBittorrent](https://www.qbittorrent.org/)
-    1. [Homepage](https://gethomepage.dev/)
-    1. [Unifi-Controller](https://www.ui.com/)
-- Monitoring using [Datadog](https://datadoghq.com)
+1. **Network stack**
+    - [Traefik](https://traefik.io) as a reverse proxy for routing
+    - [TailScale](https://tailscale.com/) for exposing Traefik (rather than exposing public)
+
+2. **Monitoring stack**
+    -  [Datadog](https://datadoghq.com) for monitorg running processes, containers and host-level stats.
+
+3. **Apps stack** - all routed to through Traefik (e.g. `plex.{PUBLIC_HOSTNAME}.com`)
+    - [Plex](https://www.plex.tv/)
+    - [Sonarr](https://sonarr.tv/)
+    - [Radarr](https://radarr.video/)
+    - [Prowlarr](https://prowlarr.com/)
+    - [QBittorrent](https://www.qbittorrent.org/)
+    - [Homepage](https://gethomepage.dev/)
+    - [Unifi-Controller](https://www.ui.com/)
+
+4. **Backups**
+    -  2 instances of [iCloud Photo Downloader](https://github.com/boredazfcuk/docker-icloudpd) for photo backup (we sync these to Backblaze B2 elsewhere)
+
 
 _Note that Homepage has configuration to point to a Home Assistant instance. In my setup this is managed using a VM [following this guide](https://gist.github.com/coltenkrauter/aee059954b11bf4f6461309af521a277)._
 

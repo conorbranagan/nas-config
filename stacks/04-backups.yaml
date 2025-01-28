@@ -1,0 +1,67 @@
+version: "3.8"
+
+# This is custom for my setup where I have 2 accounts I want backed up.
+# You can create more/fewer containers, just ensure they use different `container_name`
+# and `volumes` for the config and backup.
+services:
+  icloudpd-1:
+    image: boredazfcuk/icloudpd:latest
+    container_name: icloudpd-1
+    restart: unless-stopped
+    environment:
+      - TZ=$TZ
+      - user=apps
+      - user_id=$PUID
+      - group=users
+      - group_id=$PGID
+      - apple_id=$ICLOUD_USERNAME1
+      - authentication_type=2FA
+      - notification_days=7
+      - synchronisation_interval=86400
+      - download_path='/icloud'
+      - skip_check=false
+      - auto_delete=false
+      - notification_type=Telegram
+      - notification_title="icloud sync status"
+      - telegram_token=$TELEGRAM_TOKEN
+      - telegram_chat_id=$TELEGRAM_CHAT_ID
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 10m
+      timeout: 10s
+      retries: 3
+      start_period: 2m
+    volumes:
+      - $APPS_DIR/icloudpd-1:/config
+      - $MEDIA_DIR/backup/icloudpd-1:/icloud
+
+  icloudpd-2:
+    image: boredazfcuk/icloudpd:latest
+    container_name: icloudpd-2
+    restart: unless-stopped
+    environment:
+      - TZ=$TZ
+      - user=apps
+      - user_id=$PUID
+      - group=users
+      - group_id=$PGID
+      - apple_id=$ICLOUD_USERNAME2
+      - authentication_type=2FA
+      - notification_days=7
+      - synchronisation_interval=86400
+      - download_path='/icloud'
+      - skip_check=false
+      - auto_delete=false
+      - notification_type=Telegram
+      - notification_title="icloud sync status"
+      - telegram_token=$TELEGRAM_TOKEN
+      - telegram_chat_id=$TELEGRAM_CHAT_ID
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 10m
+      timeout: 10s
+      retries: 3
+      start_period: 2m
+    volumes:
+      - $APPS_DIR/icloudpd-2:/config
+      - $MEDIA_DIR/backup/icloudpd-2:/icloud
