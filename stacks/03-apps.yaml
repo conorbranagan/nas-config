@@ -144,27 +144,12 @@ services:
       - "traefik.http.routers.homepage.service=homepage"
       - "traefik.http.services.homepage.loadbalancer.server.port=3000"
     privileged: true
-    pull_policy: always    
-
-  unifi-controller:
-    image: lscr.io/linuxserver/unifi-controller:latest
-    container_name: unifi-controller
-    restart: unless-stopped
-    <<: [*environment]
-    volumes:
-      - $APPS_DIR/unifi:/config
-    ports:
-      - 8443:8443
-      - 3478:3478/udp
-      - 10001:10001/udp
-      - 8082:8080
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.unifi.entrypoints=websecure"
-      - "traefik.http.routers.unifi.rule=Host(`unifi.${PUBLIC_HOSTNAME}`)"
-      - "traefik.http.routers.unifi.tls=true"
-      - "traefik.http.routers.unifi.service=unifi"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.services.unifi.loadbalancer.server.port=8443"
-      - "traefik.http.services.unifi.loadbalancer.server.scheme=https"
     pull_policy: always
+
+  recyclarr:
+    user: $PUID:$PUID
+    image: ghcr.io/recyclarr/recyclarr
+    container_name: recyclarr
+    <<: [*environment, *network]
+    volumes:
+      - $APPS_DIR/recyclarr:/config
