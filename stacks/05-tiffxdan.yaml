@@ -1,0 +1,45 @@
+version: '3.8'
+
+x-network: &network
+  network_mode: container:tailscale-traefik
+
+services:
+  tiffxdan:
+    image: conorbranagan/tiffxdan-ui
+    container_name: tiffxdan
+    <<: [*network]
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=$TIFFXDAN_DATABASE_URL
+    depends_on:
+      tiffxdan-db:
+        condition: service_healthy
+    restart: unless-stopped
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.tiffxdan.entrypoints=websecure"
+      - "traefik.http.routers.tiffxdan.rule=Host(`tiffxdan.${PUBLIC_HOSTNAME}`)"
+      - "traefik.http.routers.tiffxdan.tls=true"
+      - "traefik.http.routers.tiffxdan.service=tiffxdan"
+      - "traefik.http.services.tiffxdan.loadbalancer.server.port=3001"
+
+  tiffxdan-db:
+    image: postgres:15-alpine
+    container_name: tiffxdan-db
+    <<: [*network]
+    environment:
+      - POSTGRES_USER=$TIFFXDAN_POSTGRES_USER
+      - POSTGRES_PASSWORD=$TIFFXDAN_POSTGRES_PASSWORD
+      - POSTGRES_DB=$TIFFXDAN_POSTGRES_DB
+    volumes:
+      - $APPS_DIR/tiffxdan:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
