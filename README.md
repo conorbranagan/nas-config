@@ -25,7 +25,7 @@ The setup is as follows:
 4. **Backups**
     -  2 instances of [iCloud Photo Downloader](https://github.com/boredazfcuk/docker-icloudpd) for photo backup (we sync these to Backblaze B2 elsewhere)
 
-5. **Claude Code** - a containerized [Claude Code](https://docs.anthropic.com/en/docs/claude-code) instance with Docker socket access and host filesystem mounted. Includes a `Dockerfile` for the build.
+5. **Agents** - a containerized coding agents environment with [Claude Code](https://code.claude.com) and [OpenAI Codex](https://developers.openai.com/codex/cli). Docker socket access and host filesystem mounted. Includes a `Dockerfile` for the build.
 
 6. **NanoClaw** - a [NanoClaw](https://github.com/qwibitai/nanoclaw) multi-agent orchestrator. Auto-clones on first run via an entrypoint script. Includes a `Dockerfile` and `entrypoint.sh`.
 
