@@ -1,0 +1,16 @@
+services:
+  nanoclaw:
+    build: .
+    container_name: nanoclaw
+    working_dir: /mnt/.ix-apps/app_mounts/dockge/stacks/nanoclaw/app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./app:/mnt/.ix-apps/app_mounts/dockge/stacks/nanoclaw/app
+      - ./home:/mnt/.ix-apps/app_mounts/dockge/stacks/nanoclaw/home
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - NANOCLAW_HOST_PATH=/mnt/.ix-apps/app_mounts/dockge/stacks/nanoclaw/app
+      - NANOCLAW_HOME=/mnt/.ix-apps/app_mounts/dockge/stacks/nanoclaw/home
+      - HOME=/mnt/.ix-apps/app_mounts/dockge/stacks/nanoclaw/home
+      - TZ=${TZ:-America/New_York}
+    restart: unless-stopped
