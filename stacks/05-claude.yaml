@@ -1,0 +1,12 @@
+services:
+  claude-code:
+    build: .
+    container_name: claude-code
+    volumes:
+      - /:/host
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./claude-config:/root/.claude
+      - ./workspace:/workspace
+    stdin_open: true
+    tty: true
+    restart: unless-stopped

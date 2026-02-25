@@ -25,6 +25,12 @@ The setup is as follows:
 4. **Backups**
     -  2 instances of [iCloud Photo Downloader](https://github.com/boredazfcuk/docker-icloudpd) for photo backup (we sync these to Backblaze B2 elsewhere)
 
+5. **Claude Code** - a containerized [Claude Code](https://docs.anthropic.com/en/docs/claude-code) instance with Docker socket access and host filesystem mounted. Includes a `Dockerfile` for the build.
+
+6. **NanoClaw** - a [NanoClaw](https://github.com/qwibitai/nanoclaw) multi-agent orchestrator. Auto-clones on first run via an entrypoint script. Includes a `Dockerfile` and `entrypoint.sh`.
+
+7. **Utils** - a lightweight Ubuntu 24.04 utility container with common tools (git, jq, curl, docker CLI, etc.) for ad-hoc tasks and debugging.
+
 
 _Note that Homepage has configuration to point to a Home Assistant instance. In my setup this is managed using a VM [following this guide](https://gist.github.com/coltenkrauter/aee059954b11bf4f6461309af521a277)._
 
